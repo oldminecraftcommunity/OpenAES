@@ -80,10 +80,10 @@ add_library( oaes_lib ${SRC_lib} ${HDR_lib} ${HDR} )
 #add_executable( vt_aes ${SRC_vt_aes} ${HDR} )
 #add_executable( oaes ${SRC_oaes} ${HDR} )
 
-target_compile_options(oaes_lib PUBLIC -Wno-implicit-function-declaration -Wno-int-conversion -Wno-pointer-integer-compare -Wno-incompatible-function-pointer-types)
+target_compile_options(oaes_lib PRIVATE -Wno-implicit-function-declaration -Wno-int-conversion -Wno-pointer-integer-compare -Wno-incompatible-function-pointer-types)
 if(ANDROID)
 	#sys/timeb.h was removed in ndk r10 </3
-	target_compile_options(oaes_lib PUBLIC -DNO_TIMEB)
+	target_compile_options(oaes_lib PRIVATE -DNO_TIMEB)
 endif()
 #target_link_libraries( test_encrypt oaes_lib )
 #target_link_libraries( test_keys oaes_lib )
