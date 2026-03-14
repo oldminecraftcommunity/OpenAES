@@ -33,8 +33,14 @@ static const char _NR[] = {
 
 #include <stdlib.h>
 #include <stddef.h>
-#include <time.h> 
+#include <time.h>
+//timeb.h is no longer provided by the GNU C library and it is also removed in Android NDK r10.
+//vro </3
+#ifdef NO_TIMEB
+
+#else
 #include <sys/timeb.h>
+#endif
 #include <string.h>
 
 #ifdef WIN32
@@ -483,18 +489,37 @@ OAES_RET oaes_sprintf(
 #ifdef OAES_HAVE_ISAAC
 static void oaes_get_seed( char buf[RANDSIZ + 1] )
 {
+#ifdef NO_TIMEB
+	//code partially taken from https://github.com/jhjin/OpenAES/issues/3
+	struct timespec timer;
+#else
 	struct timeb timer;
+#endif
+
 	struct tm *gmTimer;
 	char * _test = NULL;
-	
+
+#ifdef NO_TIMEB
+	clock_gettime(CLOCK_REALTIME, &timer);
+	timer.tv_nsec = (long int)((double)timer.tv_nsec / 1.0E+6);
+	gmTimer = gmtime(&timer.tv_sec);
+	_test = (char *)calloc(sizeof(char), timer.tv_nsec);
+#else
 	ftime (&timer);
 	gmTimer = gmtime( &timer.time );
 	_test = (char *) calloc( sizeof( char ), timer.millitm );
+#endif
+
 	sprintf( buf, "%04d%02d%02d%02d%02d%02d%03d%p%d",
 		gmTimer->tm_year + 1900, gmTimer->tm_mon + 1, gmTimer->tm_mday,
-		gmTimer->tm_hour, gmTimer->tm_min, gmTimer->tm_sec, timer.millitm,
-		_test + timer.millitm, getpid() );
-	
+		gmTimer->tm_hour, gmTimer->tm_min, gmTimer->tm_sec,
+#ifdef NO_TIMEB
+			timer.tv_nsec, _test + timer.tv_nsec /*TODO - millitm is not nsec?*/
+#else
+			timer.millitm, _test + timer.millitm
+#endif
+		, getpid() );
+
 	if( _test )
 		free( _test );
 }
