@@ -55,6 +55,9 @@ static const char _NR[] = {
 // the block is padded
 #define OAES_FLAG_PAD 0x01
 
+#include <stdlib.h>
+#include <stdio.h>
+
 #ifndef min
 # define min(a,b) (((a)<(b)) ? (a) : (b))
 #endif /* min */

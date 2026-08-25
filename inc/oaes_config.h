@@ -36,7 +36,7 @@ extern "C" {
 #endif
 
 #ifndef OAES_HAVE_ISAAC
-#define OAES_HAVE_ISAAC 1
+//#define OAES_HAVE_ISAAC 1
 #endif // OAES_HAVE_ISAAC
 
 #ifndef OAES_DEBUG
