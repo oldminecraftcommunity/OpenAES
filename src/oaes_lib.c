@@ -32,8 +32,20 @@ static const char _NR[] = {
 	0x41,0x6c,0x20,0x52,0x61,0x6d,0x6c,0x69,0x00 };
 
 #include <stddef.h>
-#include <time.h> 
+#include <time.h>
+
+#ifndef NO_TIMEB
 #include <sys/timeb.h>
+#endif
+
+//getpid thingy
+#ifdef WIN32
+#define OAES_GETPID GetCurrentProcessId
+#else
+#include <unistd.h>
+#define OAES_GETPID getpid
+#endif
+
 #include <malloc.h>
 #include <string.h>
 
@@ -42,6 +54,7 @@ static const char _NR[] = {
 #endif
 
 #include "oaes_config.h"
+
 #include "oaes_lib.h"
 
 #ifdef OAES_HAVE_ISAAC
@@ -501,18 +514,28 @@ static void oaes_get_seed( char buf[RANDSIZ + 1] )
 #else
 static uint32_t oaes_get_seed()
 {
+#ifdef NO_TIMEB
+	struct timespec timer;
+#else
 	struct timeb timer;
+#endif
 	struct tm *gmTimer;
 	char * _test = NULL;
 	uint32_t _ret = 0;
-	
+#ifdef NO_TIMEB
+	gmTimer = gmtime(&timer.tv_sec);
+	_test = (char *)calloc(sizeof(char), timer.tv_nsec);
+	_ret = gmTimer->tm_year + 1900 + gmTimer->tm_mon + 1 + gmTimer->tm_mday;
+	_ret += gmTimer->tm_hour + gmTimer->tm_min + gmTimer->tm_sec + timer.tv_nsec;
+	_ret += (uint64_t)(_test + timer.tv_nsec) + OAES_GETPID();
+#else
 	ftime (&timer);
 	gmTimer = gmtime( &timer.time );
 	_test = (char *) calloc( sizeof( char ), timer.millitm );
 	_ret = gmTimer->tm_year + 1900 + gmTimer->tm_mon + 1 + gmTimer->tm_mday +
 			gmTimer->tm_hour + gmTimer->tm_min + gmTimer->tm_sec + timer.millitm +
-			(uint32_t) ( _test + timer.millitm ) + getpid();
-
+			(uint32_t) ( _test + timer.millitm ) + OAES_GETPID();
+#endif
 	if( _test )
 		free( _test );
 	

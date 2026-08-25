@@ -71,20 +71,25 @@ set (SRC_oaes
 	)
 
 add_library( oaes_lib ${SRC_lib} ${HDR_lib} ${HDR} )
-add_executable( test_encrypt ${SRC_test_encrypt} ${HDR} )
-add_executable( test_keys ${SRC_test_keys} ${HDR} )
-add_executable( test_performance ${SRC_test_performance} ${HDR} )
-add_executable( vt_aes ${SRC_vt_aes} ${HDR} )
-add_executable( oaes ${SRC_oaes} ${HDR} )
+#add_executable( test_encrypt ${SRC_test_encrypt} ${HDR} )
+#add_executable( test_keys ${SRC_test_keys} ${HDR} )
+#add_executable( test_performance ${SRC_test_performance} ${HDR} )
+#add_executable( vt_aes ${SRC_vt_aes} ${HDR} )
+#add_executable( oaes ${SRC_oaes} ${HDR} )
+if(ANDROID)
+	#sys/timeb.h was removed in ndk r10 </3 - dont see any reason to add
+	#something to check ndk version since cmake is not supported in r10 anyway(i think)
+	target_compile_options(oaes_lib PUBLIC -DNO_TIMEB)
+endif()
 
-target_link_libraries( test_encrypt oaes_lib )
-target_link_libraries( test_keys oaes_lib )
-target_link_libraries( test_performance oaes_lib )
-target_link_libraries( vt_aes oaes_lib )
+#target_link_libraries( test_encrypt oaes_lib )
+#target_link_libraries( test_keys oaes_lib )
+#target_link_libraries( test_performance oaes_lib )
+#target_link_libraries( vt_aes oaes_lib )
 if( MSVC )
-	target_link_libraries( oaes oaes_lib )
+#	target_link_libraries( oaes oaes_lib )
 else()
-	target_link_libraries( oaes oaes_lib pthread )
+#	target_link_libraries( oaes oaes_lib pthread )
 endif()
 
 file( COPY
@@ -129,7 +134,7 @@ if( BUILD_SHARED_LIBS )
 	)
 else()
 	set_property(
-		TARGET "oaes_lib" "test_encrypt" "test_keys" "test_performance" "vt_aes" "oaes"
+		TARGET "oaes_lib" # "test_encrypt" "test_keys" "test_performance" "vt_aes" "oaes"
 		APPEND PROPERTY COMPILE_DEFINITIONS OAES_STATIC=1
 	)
 endif()
