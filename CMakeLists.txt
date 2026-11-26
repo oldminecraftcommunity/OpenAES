@@ -26,49 +26,27 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # ---------------------------------------------------------------------------
 
-cmake_minimum_required (VERSION 2.8.0)
+cmake_minimum_required (VERSION 3.16)
 
 project ( "oaes" )
 
-include_directories (
-		${CMAKE_CURRENT_SOURCE_DIR}/inc
-		${CMAKE_CURRENT_SOURCE_DIR}/src/isaac
-	)
+include_directories (${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
-set (HDR
-		${CMAKE_CURRENT_SOURCE_DIR}/inc/oaes_lib.h
-	)
+set (HDR ${CMAKE_CURRENT_SOURCE_DIR}/inc/oaes_lib.h)
+set (SRC_lib ${CMAKE_CURRENT_SOURCE_DIR}/src/oaes_lib.c)
+set (HDR_lib ${CMAKE_CURRENT_SOURCE_DIR}/inc/oaes_config.h)
 
-set (SRC_lib
-		${CMAKE_CURRENT_SOURCE_DIR}/src/oaes_lib.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/isaac/rand.c
-	)
+set (SRC_test_encrypt ${CMAKE_CURRENT_SOURCE_DIR}/test/test_encrypt.c)
+set (SRC_test_keys ${CMAKE_CURRENT_SOURCE_DIR}/test/test_keys.c)
+set (SRC_test_performance ${CMAKE_CURRENT_SOURCE_DIR}/test/test_performance.c)
+set (SRC_vt_aes ${CMAKE_CURRENT_SOURCE_DIR}/test/vt_aes.c)
+set (SRC_oaes ${CMAKE_CURRENT_SOURCE_DIR}/src/oaes.c)
+if(USE_ISAAC)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/isaac)
+	set(SRC_lib ${SRC_lib} ${CMAKE_CURRENT_SOURCE_DIR}/src/isaac/rand.c)
+	set(HDR_lib ${HDR_lib} ${CMAKE_CURRENT_SOURCE_DIR}/src/isaac/rand.h ${CMAKE_CURRENT_SOURCE_DIR}/src/isaac/standard.h)
+endif()
 
-set (HDR_lib
-		${CMAKE_CURRENT_SOURCE_DIR}/inc/oaes_config.h
-		${CMAKE_CURRENT_SOURCE_DIR}/src/isaac/rand.h
-		${CMAKE_CURRENT_SOURCE_DIR}/src/isaac/standard.h
-	)
-
-set (SRC_test_encrypt
-		${CMAKE_CURRENT_SOURCE_DIR}/test/test_encrypt.c
-	)
-
-set (SRC_test_keys
-		${CMAKE_CURRENT_SOURCE_DIR}/test/test_keys.c
-	)
-
-set (SRC_test_performance
-		${CMAKE_CURRENT_SOURCE_DIR}/test/test_performance.c
-	)
-
-set (SRC_vt_aes
-		${CMAKE_CURRENT_SOURCE_DIR}/test/vt_aes.c
-	)
-
-set (SRC_oaes
-		${CMAKE_CURRENT_SOURCE_DIR}/src/oaes.c
-	)
 
 add_library( oaes_lib ${SRC_lib} ${HDR_lib} ${HDR} )
 #add_executable( test_encrypt ${SRC_test_encrypt} ${HDR} )
@@ -80,6 +58,9 @@ if(ANDROID)
 	#sys/timeb.h was removed in ndk r10 </3 - dont see any reason to add
 	#something to check ndk version since cmake is not supported in r10 anyway(i think)
 	target_compile_options(oaes_lib PUBLIC -DNO_TIMEB)
+endif()
+if(USE_ISAAC)
+	target_compile_options(oaes_lib PUBLIC -DOAES_HAVE_ISAAC=1)
 endif()
 
 #target_link_libraries( test_encrypt oaes_lib )

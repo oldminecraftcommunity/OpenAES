@@ -48,8 +48,8 @@ void isaac(randctx *r);
 */
 #define rand(r) \
    (!(r)->randcnt-- ? \
-     (isaac(r), (r)->randcnt=RANDSIZ-1, (r)->randrsl[(r)->randcnt]) : \
-     (r)->randrsl[(r)->randcnt])
+	 (isaac(r), (r)->randcnt=RANDSIZ-1, (r)->randrsl[(r)->randcnt]) : \
+	 (r)->randrsl[(r)->randcnt])
 
 #endif  /* RAND */
 
